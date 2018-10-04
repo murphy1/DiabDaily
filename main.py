@@ -4,6 +4,7 @@ import json
 import firebase_admin
 from firebase_admin import db
 from firebase_admin import credentials
+from datetime import datetime
 
 # Database information (Firebase)
 path_to_db = ""
@@ -56,10 +57,19 @@ class DiabDaily(object):
         return print_list
 
     # this method allows the user to enter their blood sugar levels
-    def sugar(self, reading, name):
+    def enter_sugar(self, reading, name):
         # will add a new attribute to the db
-        new_user = self.root.child('Sugar Levels').push({
+        push_sugar = self.root.child("%s's Sugar Levels" % name).push({
             'level': '%s' % reading,  #mmol/L
-            'name': '%s' % name
+            'name': '%s' % name,
+            'date': str(datetime.now())
         })
         print("%s's reading added!" % name)
+
+    # this method allows the user to read their levels from the database
+    def read_sugar(self, name):
+        result_list = list()
+        ref = db.reference("%s's Sugar Levels" % name)
+        for keys, values in ref.get().items():
+            result_list.append('Date: '+values['date']+' - Reading: '+values['level']+'mmol/L')
+        print(result_list)
