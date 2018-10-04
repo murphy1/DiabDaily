@@ -2,6 +2,7 @@
 import requests
 import json
 import firebase_admin
+import matplotlib.pyplot as plt
 from firebase_admin import db
 from firebase_admin import credentials
 from datetime import datetime
@@ -91,3 +92,54 @@ class DiabDaily(object):
         for keys, values in ref.get().items():
             result_list.append('Medication: '+values['medication']+' - Dosage: '+values['dosage']+' times daily')
         print(result_list)
+
+    # set up the y-axis numbers for plotting
+    def y_axis_sugar_levels(self):
+        plot_numbers_for_levels = []
+        for i in range(0, 10):
+            plot_numbers_for_levels.append(float(i))
+        return plot_numbers_for_levels
+
+    # method to get the values from the database to be plotted (for sugar levels)
+    def sugar_plot_setup(self, name):
+        date_list = list()
+        time_list = list()
+        level_list = list()
+        daily_list = list()
+        ref = db.reference("%s's Sugar Levels" % name)
+        for keys, values in ref.get().items():
+            # get the date, time and the value
+            date_list.append((values['date']).split(" ")[0])
+            time_list.append(((values['date']).split(" ")[1])[0:5])
+            level_list.append(float(values['level']))
+            daily_list.append((values['date']).split(" ")[0]+' '+values['level'])
+
+        return date_list, time_list, level_list, daily_list
+
+    # this method will plot sugar levels with the information from the above 'sugar_plot_setup'
+    def sugar_plot(self, name, type):
+        proceed = False
+        if type == "hourly":
+            plt.plot(DiabDaily.sugar_plot_setup(self, name)[1], DiabDaily.sugar_plot_setup(self, name)[2], 'ro')
+            proceed = True
+        # the user can enter a day to see their average sugar reading
+        elif type == "daily":
+            average = 0
+            num_of_records = 0
+            date = input("Please enter a date:")
+            for record in DiabDaily.sugar_plot_setup(self, name)[3]:
+                if date == record.split(" ")[0]:
+                    average += float(record.split(" ")[1])
+                    num_of_records += 1
+            average = str(round(average / num_of_records, 2))
+            plt.plot(date, float(average), 'ro')
+            proceed = True
+        else:
+            print("Please enter a type!")
+        if proceed is True:
+            plt.title("%s's Sugar Levels" % name)
+            plt.xlabel("Time")
+            plt.ylabel("mmol/L")
+            plt.yticks(DiabDaily.y_axis_sugar_levels(self))
+            plt.grid(True)
+            plt.show()
