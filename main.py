@@ -73,3 +73,21 @@ class DiabDaily(object):
         for keys, values in ref.get().items():
             result_list.append('Date: '+values['date']+' - Reading: '+values['level']+'mmol/L')
         print(result_list)
+
+    # user enters their medication here along with the dosage per day
+    def enter_medication(self, user_name, med_name, dosage):
+        push_medication = self.root.child("%s's Medication" % user_name).push({
+            'dosage': '%d' % dosage,
+            'medication': '%s' % med_name,
+            'name': '%s' % user_name,
+            'date entered': str(datetime.now())
+        })
+        print("%s's medication added!" % user_name)
+
+    # users can read their medication and dosages
+    def read_medication(self, name):
+        result_list = list()
+        ref = db.reference("%s's Medication" % name)
+        for keys, values in ref.get().items():
+            result_list.append('Medication: '+values['medication']+' - Dosage: '+values['dosage']+' times daily')
+        print(result_list)
