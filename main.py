@@ -8,7 +8,7 @@ from firebase_admin import credentials
 from datetime import datetime
 
 # Database information (Firebase)
-path_to_db = "/"
+path_to_db = ""
 db_url = ""
 
 
@@ -93,9 +93,10 @@ class DiabDaily(object):
 
 
     # user enters their medication here along with the dosage per day
-    def enter_medication(self, user_name, med_name, dosage):
+    def enter_medication(self, user_name, med_name, tab_amount, dosage):
         push_medication = self.root.child("%s's Medication" % user_name).push({
             'dosage': '%d' % dosage,
+            'tab amount': '%d' % tab_amount,
             'medication': '%s' % med_name,
             'name': '%s' % user_name,
             'date entered': str(datetime.now())
@@ -108,6 +109,37 @@ class DiabDaily(object):
         ref = db.reference("%s's Medication" % name)
         for keys, values in ref.get().items():
             result_list.append('Medication: '+values['medication']+' - Dosage: '+values['dosage']+' times daily')
+        print(result_list)
+
+    # this method will allocate medication to each day of the week and will let the user know when they will run out
+    def allocate_medication(self, name):
+        med_list = list()
+        result_list = list()
+        monday_list = list()
+        tuesday_list = list()
+        wednesday_list = list()
+        thursday_list = list()
+        friday_list = list()
+        saturday_list = list()
+        sunday_list = list()
+        ref = db.reference("%s's Medication" % name)
+        for keys, values in ref.get().items():
+            med_list.append(str(int(values['tab amount'])/7)+" "+values['medication'])
+        for medication in med_list:
+            monday_list.append(medication)
+            tuesday_list.append(medication)
+            wednesday_list.append(medication)
+            thursday_list.append(medication)
+            friday_list.append(medication)
+            saturday_list.append(medication)
+            sunday_list.append(medication)
+        result_list.append("Monday take: "+str(monday_list))
+        result_list.append("Tuesday take: "+str(tuesday_list))
+        result_list.append("Wednesday take: "+str(wednesday_list))
+        result_list.append("Thursday take: "+str(thursday_list))
+        result_list.append("Friday take: "+str(friday_list))
+        result_list.append("Saturday take: "+str(saturday_list))
+        result_list.append("Sunday take: "+str(sunday_list))
         print(result_list)
 
 
