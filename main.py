@@ -8,7 +8,7 @@ from firebase_admin import credentials
 from datetime import datetime
 
 # Database information (Firebase)
-path_to_db = ""
+path_to_db = "/"
 db_url = ""
 
 
@@ -57,6 +57,10 @@ class DiabDaily(object):
             print_list.append("Protein: "+str(v3[0]['nf_protein'])+"g")
         return print_list
 
+
+    # Sugar Log
+
+
     # this method allows the user to enter their blood sugar levels
     def enter_sugar(self, reading, name):
         # will add a new attribute to the db
@@ -68,12 +72,25 @@ class DiabDaily(object):
         print("%s's reading added!" % name)
 
     # this method allows the user to read their levels from the database
-    def read_sugar(self, name):
+    def read_sugar_all_readings(self, name):
         result_list = list()
         ref = db.reference("%s's Sugar Levels" % name)
         for keys, values in ref.get().items():
             result_list.append('Date: '+values['date']+' - Reading: '+values['level']+'mmol/L')
         print(result_list)
+
+    # This method will allow the user to read their sugar readings by inputted date
+    def read_sugar_by_date(self, name, date):
+        result_list = list()
+        ref = db.reference("%s's Sugar Levels" % name)
+        for keys, values in ref.get().items():
+            if date == str(values['date']).split(" ")[0]:
+                result_list.append("Date: "+str(values['date']).split(" ")[0]+" - Reading: "+values['level']+"mmol/L")
+        print(result_list)
+
+
+    # Medication Log
+
 
     # user enters their medication here along with the dosage per day
     def enter_medication(self, user_name, med_name, dosage):
@@ -92,6 +109,10 @@ class DiabDaily(object):
         for keys, values in ref.get().items():
             result_list.append('Medication: '+values['medication']+' - Dosage: '+values['dosage']+' times daily')
         print(result_list)
+
+
+    # Graphing with Matplotlib
+
 
     # set up the y-axis numbers for plotting
     def y_axis_sugar_levels(self):
